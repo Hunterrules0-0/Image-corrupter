@@ -1,0 +1,7 @@
+source/ui_xml.h
+.vscode/*
+build/*
+debug/*
+*.glade~
+*.glade#
+*.backup
