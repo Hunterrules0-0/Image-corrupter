@@ -1,10 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "./tools/crc.c"
-#include <zlib.h>
+
 
 // this functions figures out if the picture is a png or not
-int get_image_format(int Imagetype, const char * restrict image1[], FILE *ImageFP1)
+int get_image_format(int Imagetype, const char * restrict image1[], FILE *ImageFP1, int IDAT_start_and_end[])
 {
 int i;
 unsigned int calulated_crc;
@@ -51,7 +50,7 @@ for(int i = 1; i < 20; i++){
 
 			switch (ComfirmImageFormat){
 				case 3:
-					IDAT_START = offset - 2; //save the value of idat 
+					IDAT_START = offset + 4; //save the value of idat 
 					i = 52;
 					break;
 			}
@@ -94,26 +93,25 @@ for(int i = 1; i < 20; i++){
 						}	
 						printf("reading");
 						fclose(ImageFP1);
-						ImageFP1 = fopen("Image_Data", "a");
+						ImageFP1 = fopen("./tools/Image_Data", "a");
 						for(int e = 0; e < i; e++){
 						fputc (buffer[e], ImageFP1);
 
 						}
 						i = 1000;
-
+						IDAT_start_and_end[1] = IDAT_START;
+						IDAT_start_and_end[2] = Endlocation;
 					}
 					
 					
 
 		    }		
-
+		
 		}else{printf("\n We cant find IDAT. is this a valid png file or dose my code suck that bad?"); exit(0);}
 	
-// document
-//get other info 
-//maybe calc crc?
+	
 }
-
+return(*IDAT_start_and_end);
 }
 
 
@@ -132,13 +130,14 @@ for(int i = 1; i < 20; i++){
 //
 int main(int argc,  const char * restrict image[])
 {
+	int store[3];
 	int i;
 	int Imagetype;
 	char ImageBytes[50];
 	FILE *ImageFP; // FP is short for file pointer
 	ImageFP = fopen(image[1], "rb+"); // load our image
-	 get_image_format(Imagetype, image, ImageFP);
-        
+	 get_image_format(Imagetype, image, ImageFP, store);
+	printf("\n %i", store[1]);
 }
 
 
