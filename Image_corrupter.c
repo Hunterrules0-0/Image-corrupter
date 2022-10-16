@@ -2,7 +2,8 @@
 #include <stdlib.h>
 
 
-// this functions figures out if the picture is a png or not
+// this functions figures out if the picture is a png or not and will generate the start and end of the IDAT chunk may 
+// add options for other image types in the future
 int get_image_format(int Imagetype, const char * restrict image1[], FILE *ImageFP1, int IDAT_start_and_end[])
 {
 int i;
@@ -12,29 +13,21 @@ int c;
 int ComfirmImageFormat = 0;
 int IDAT_START;
 int Endlocation;
-unsigned char buffer[256 * 128 * 16];
 
 fseek(ImageFP1, offset, SEEK_SET);	
 c = fgetc(ImageFP1);
 if (c == 'P'){
 
 Imagetype = 1; //image is a png if this gets called
-printf("reading for chunks\n");
 
-for(int i = 1; i < 20; i++){
-	offset++;
-	fseek(ImageFP1, offset, SEEK_SET);	//check the image byte. It uses the offset as a pointer to which bytes we want to check
-	c = fgetc(ImageFP1); //store the image byte into a var for later
-	if(c == 'I' || c == 'H' || c == 'D' || c == 'R'){
-		ComfirmImageFormat++;
-	}
+
 	
 
-}
-	if(ComfirmImageFormat == 4){ //find IDAT location
-		printf("\nCan 90 percent comfirm its a png\n");
+
+
+		
 		ComfirmImageFormat = 0;
-		for(int i = 1; i < 50; i++){
+		for(int i = 1; i < 2; i=i){
 			offset++; //add 1 to offset
 			fseek(ImageFP1, offset, SEEK_SET);	
 			c = fgetc(ImageFP1);
@@ -50,16 +43,16 @@ for(int i = 1; i < 20; i++){
 
 			switch (ComfirmImageFormat){
 				case 3:
-					IDAT_START = offset + 4; //save the value of idat 
+					IDAT_START = offset + 5; //save the value of idat 
 					i = 52;
 					break;
 			}
 			
 		}
-	}else{printf("\nIt seems you have met a terriable fate havent you. The program couldnt find the IDAT chunk in the png image"); exit(0);}
+
 		if(ComfirmImageFormat > 2){
-			printf("\n hooray succesfully found IDAT chunk location"); //IDAT LOCATION STORED IN IDAT_START
-		    //find end of the IDAT CHUNK so we can calulate the crc
+			
+		    //find end of the IDAT CHUNK
 			ComfirmImageFormat = 0;
 		
 		    for(int i = 1; i < 1000; i){
@@ -76,28 +69,9 @@ for(int i = 1; i < 20; i++){
 
 					}
 					if(ComfirmImageFormat == 3){
-						printf("\n found end");
-						printf("\n %x", c);
-						Endlocation = offset - 6;
+						Endlocation = offset - 5;
 
-						i = -1;
-						for(offset = IDAT_START; offset < Endlocation; offset++){
-							i++;
-							fseek(ImageFP1, offset, SEEK_SET);	//check the image byte. It uses the offset as a pointer to which bytes we want to check
-							c = fgetc(ImageFP1); //store the image byte into a var for later
-							buffer[i] = c;
-								
-							
-
-							
-						}	
-						printf("reading");
-						fclose(ImageFP1);
-						ImageFP1 = fopen("./tools/Image_Data", "a");
-						for(int e = 0; e < i; e++){
-						fputc (buffer[e], ImageFP1);
-
-						}
+						
 						i = 1000;
 						IDAT_start_and_end[1] = IDAT_START;
 						IDAT_start_and_end[2] = Endlocation;
@@ -111,11 +85,27 @@ for(int i = 1; i < 20; i++){
 	
 	
 }
+
 return(*IDAT_start_and_end);
 }
 
 
 
+
+int CorruptIDAT(int IDAT_Location, int End_IDAT_location ){
+	int amount_of_bytes = 0;
+	int ChosenNumber;
+	for(int i = IDAT_Location; i < End_IDAT_location; i++){amount_of_bytes = i;}
+
+	printf("\n Image file loaded there are 1 out of %i", amount_of_bytes);
+	printf(" bytes to corrupt please select the amount of bytes that will randomly be chosen be corrupt \n\n");
+	printf(" Amount of bytes:");
+	scanf("%i", &ChosenNumber);
+	for(int i = 0; i < ChosenNumber; i++){
+		//Corrupt Image
+	}
+
+}
 
 
 
@@ -137,7 +127,9 @@ int main(int argc,  const char * restrict image[])
 	FILE *ImageFP; // FP is short for file pointer
 	ImageFP = fopen(image[1], "rb+"); // load our image
 	 get_image_format(Imagetype, image, ImageFP, store);
-	printf("\n %i", store[1]);
+	 printf("%i", store[1]);
+	 CorruptIDAT(store[1], store[2]);
+	
 }
 
 
